@@ -1,0 +1,136 @@
+# ------------------------------------------------------------------
+# AWS DevOps Knowledge Assistant — .gitignore
+# ------------------------------------------------------------------
+
+
+# ========================
+# Environment & Secrets
+# ========================
+.env
+.env.*
+!.env.example          # always track the example file
+
+
+# ========================
+# Python
+# ========================
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+*.pyd
+*.pdb
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+.Python
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+*.egg
+.eggs/
+wheels/
+
+# Pytest / coverage
+.pytest_cache/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+*.coveragerc
+
+# mypy / type checkers
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pytype/
+.pyre/
+
+# Jupyter Notebooks
+.ipynb_checkpoints/
+*.ipynb
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+
+# ========================
+# Streamlit
+# ========================
+.streamlit/secrets.toml
+
+
+# ========================
+# Docker
+# ========================
+*.dockerignore
+
+
+# ========================
+# AWS
+# ========================
+.aws/
+*.pem
+*.key
+aws-exports.js
+
+
+# ========================
+# Logs
+# ========================
+*.log
+logs/
+*.out
+
+
+# ========================
+# OS — macOS
+# ========================
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+
+
+# ========================
+# OS — Windows
+# ========================
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+
+# ========================
+# VS Code
+# ========================
+.vscode/
+*.code-workspace
+
+
+# ========================
+# JetBrains / PyCharm
+# ========================
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+
+
+# ========================
+# Temporary files
+# ========================
+*.tmp
+*.temp
+*.swp
+*.swo
+*~

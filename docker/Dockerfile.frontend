@@ -1,0 +1,69 @@
+# ------------------------------------------------------------------
+# AWS DevOps Knowledge Assistant — Frontend Dockerfile
+# docker/Dockerfile.frontend
+# Multi-stage build: lean, secure, production-ready.
+# ------------------------------------------------------------------
+
+# ========================
+# Stage 1 — Builder
+# ========================
+FROM python:3.12-slim AS builder
+
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    VIRTUAL_ENV=/opt/venv
+
+WORKDIR /build
+
+# Create an isolated virtual environment
+RUN python -m venv $VIRTUAL_ENV
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+
+# Install dependencies first — cached unless requirements.txt changes
+COPY frontend/requirements.txt .
+RUN pip install --upgrade pip \
+    && pip install -r requirements.txt
+
+
+# ========================
+# Stage 2 — Runtime
+# ========================
+FROM python:3.12-slim AS runtime
+
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    VIRTUAL_ENV=/opt/venv \
+    PATH="/opt/venv/bin:$PATH" \
+    # Disable Streamlit telemetry and browser auto-open in containers
+    STREAMLIT_BROWSER_GATHER_USAGE_STATS=false \
+    STREAMLIT_SERVER_HEADLESS=true \
+    STREAMLIT_SERVER_PORT=8501 \
+    STREAMLIT_SERVER_ADDRESS=0.0.0.0
+
+# Create a non-root user and group
+RUN groupadd --gid 1001 appgroup \
+    && useradd --uid 1001 --gid appgroup --no-create-home appuser
+
+WORKDIR /app
+
+# Copy only the virtualenv from builder — no pip in final image
+COPY --from=builder /opt/venv /opt/venv
+
+# Copy application source
+COPY frontend/ .
+
+# Transfer ownership to non-root user
+RUN chown -R appuser:appgroup /app
+
+USER appuser
+
+EXPOSE 8501
+
+# Health check using Streamlit's native health endpoint
+HEALTHCHECK --interval=30s --timeout=10s --start-period=20s --retries=3 \
+    CMD python -c \
+    "import urllib.request; urllib.request.urlopen('http://localhost:8501/_stcore/health')"
+
+CMD ["streamlit", "run", "streamlit_app.py"]

@@ -1,0 +1,11 @@
+# ------------------------------------------------------------------
+# AWS DevOps Knowledge Assistant — Frontend Dependencies
+# Python 3.12
+# Pin exact versions for reproducible builds.
+# ------------------------------------------------------------------
+
+# UI framework
+streamlit==1.41.1
+
+# HTTP client for FastAPI backend communication
+requests==2.32.3

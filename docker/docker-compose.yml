@@ -1,0 +1,87 @@
+# ------------------------------------------------------------------
+# AWS DevOps Knowledge Assistant — Docker Compose
+# docker/docker-compose.yml
+#
+# Usage:
+#   docker compose -f docker/docker-compose.yml up --build
+#   docker compose -f docker/docker-compose.yml down
+# ------------------------------------------------------------------
+
+version: "3.9"
+
+services:
+
+  # ========================
+  # Backend — FastAPI
+  # ========================
+  backend:
+    build:
+      context: ..                          # project root
+      dockerfile: docker/Dockerfile.backend
+    container_name: aws-devops-backend
+    image: aws-devops-backend:latest
+    ports:
+      - "8000:8000"
+    env_file:
+      - ../backend/.env                    # loads all settings
+    environment:
+      - AWS_REGION=${AWS_REGION:-us-east-1}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+    volumes:
+      # Local dev: mount host AWS credentials read-only.
+      # Production: remove this block and rely on IAM Role instead.
+      - ${HOME}/.aws:/home/appuser/.aws:ro
+    networks:
+      - assistant-network
+    restart: unless-stopped
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+  # ========================
+  # Frontend — Streamlit
+  # ========================
+  frontend:
+    build:
+      context: ..                          # project root
+      dockerfile: docker/Dockerfile.frontend
+    container_name: aws-devops-frontend
+    image: aws-devops-frontend:latest
+    ports:
+      - "8501:8501"
+    environment:
+      # Use Docker service name — NOT localhost — for inter-container calls
+      - API_BASE_URL=http://backend:8000
+      - STREAMLIT_SERVER_HEADLESS=true
+      - STREAMLIT_BROWSER_GATHER_USAGE_STATS=false
+    depends_on:
+      backend:
+        condition: service_healthy         # wait until backend passes health check
+    networks:
+      - assistant-network
+    restart: unless-stopped
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://localhost:8501/_stcore/health')"
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+
+# ========================
+# Network
+# ========================
+networks:
+  assistant-network:
+    driver: bridge
+    name: aws-devops-network

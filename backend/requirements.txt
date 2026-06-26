@@ -1,0 +1,21 @@
+# ------------------------------------------------------------------
+# AWS DevOps Knowledge Assistant — Runtime Dependencies
+# Python 3.12
+# Pin exact versions for reproducible builds.
+# ------------------------------------------------------------------
+
+# Web framework
+fastapi==0.115.5
+
+# ASGI server
+uvicorn[standard]==0.32.1
+
+# AWS SDK
+boto3==1.35.76
+
+# Pydantic v2 — data validation and settings management
+pydantic==2.10.3
+pydantic-settings==2.6.1
+
+# Environment variable loading
+python-dotenv==1.0.1
